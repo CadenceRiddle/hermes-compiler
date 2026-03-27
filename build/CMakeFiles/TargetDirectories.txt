@@ -1,0 +1,3 @@
+C:/Users/caden/OneDrive/Projects/hermes/build/CMakeFiles/hermes.dir
+C:/Users/caden/OneDrive/Projects/hermes/build/CMakeFiles/edit_cache.dir
+C:/Users/caden/OneDrive/Projects/hermes/build/CMakeFiles/rebuild_cache.dir
