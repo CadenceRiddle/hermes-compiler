@@ -1,5 +1,19 @@
 #include <iostream>
 #include <fstream>
+#include <sstream>
+#include <optional>
+#include <vector>
+
+enum class TokenType {
+    _return, 
+    int_lit,
+    semi
+};
+
+struct Token {
+    TokenType type;
+    std::optional<std::string> value; 
+}; 
 
 int main(int argc, char* argv[]){
 
@@ -9,8 +23,17 @@ int main(int argc, char* argv[]){
         return EXIT_FAILURE;
     }
 
-    std::fstream input(argv[1], std::ios::in);
+    
+    std::string contents;
+    {
+        std::stringstream contents_stream;
+        std::fstream input(argv[1], std::ios::in);
+        contents_stream << input.rdbuf();
+        contents = contents_stream.str();
+    }
 
-    std::cout << argv[1] << std::endl;
+    std::cout << contents << std::endl;
+    
+
     return EXIT_SUCCESS;
 }
