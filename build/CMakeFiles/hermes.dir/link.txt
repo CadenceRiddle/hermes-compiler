@@ -1,3 +1,0 @@
-"C:\Program Files\CMake\bin\cmake.exe" -E rm -f CMakeFiles\hermes.dir/objects.a
-C:\msys64\mingw64\bin\ar.exe qc CMakeFiles\hermes.dir/objects.a @CMakeFiles\hermes.dir\objects1.rsp
-C:\msys64\mingw64\bin\c++.exe -Wl,--whole-archive CMakeFiles\hermes.dir/objects.a -Wl,--no-whole-archive -o hermes.exe -Wl,--out-implib,libhermes.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\hermes.dir\linkLibs.rsp
