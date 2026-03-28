@@ -12,8 +12,60 @@ enum class TokenType {
 
 struct Token {
     TokenType type;
-    std::optional<std::string> value; 
+    std::optional<std::string> value {}; 
 }; 
+
+std::vector<Token> tokenize(const std::string& str){
+
+    std::vector<Token> tokens;
+
+    std::string buf;
+    for(int i = 0; i < str.length(); i++){
+        char c = str.at(i);
+        if (std::isalpha(c)){
+            buf.push_back(c);
+            i++;
+            while (std::isalnum(str.at(i))){
+                buf.push_back(str.at(i));
+                i++;
+            }
+            i--;
+
+            if(buf == "return"){
+                tokens.push_back(Token{TokenType::_return});
+                buf.clear();
+                continue;
+            }
+            else{
+                std::cerr << "You Messed Up" << std::endl;
+                exit(EXIT_FAILURE);
+            }
+        }
+        else if (std::isdigit(c)){
+            buf.push_back(c);
+            i++;
+            while (std::isdigit(str.at(i))){
+                buf.push_back(str.at(i));
+                i++;
+            }
+            i--;
+            tokens.push_back(Token{TokenType::int_lit, buf});
+            buf.clear();
+        }
+        else if (c == ';'){
+            tokens.push_back(Token{TokenType::semi});
+        }
+        else if (std::isspace(c)){
+            continue;
+        }
+        else{
+            std::cerr << "You Messed Up" << std::endl;
+            exit(EXIT_FAILURE);
+        }
+
+    }
+    return tokens;
+}
 
 int main(int argc, char* argv[]){
 
@@ -32,8 +84,8 @@ int main(int argc, char* argv[]){
         contents = contents_stream.str();
     }
 
-    std::cout << contents << std::endl;
-    
+    std::vector<Token> tokens = tokenize(contents);
+    std::cout << "Tokenization successful" << std::endl;
 
     return EXIT_SUCCESS;
 }
