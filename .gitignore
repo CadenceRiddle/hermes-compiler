@@ -2,3 +2,6 @@ build/
 .vscode/
 *.exe
 out.asm
+out.obj
+out 
+out.o
