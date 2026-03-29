@@ -24,62 +24,56 @@ public:
     }
 
     inline std::vector<Token> tokenize(){
-
+        std::vector<Token> m_tokens;
         std::string buf;
         while(peak().has_value()){
-            if (std::isalpha(peak().value()))
-        }
-        for(int i = 0; i < str.length(); i++){
-            char c = str.at(i);
-            if (std::isalpha(c)){
-                buf.push_back(c);
-                i++;
-                while (std::isalnum(str.at(i))){
-                    buf.push_back(str.at(i));
-                    i++;
+            if (std::isalpha(peak().value())){
+                buf.push_back(consume());
+                while (peak().has_value() && std::isalnum(peak().value())){
+                    buf.push_back(consume());
                 }
-                i--;
 
-                if(buf == "return"){
-                    tokens.push_back(Token{TokenType::exit});
+                if (buf == "exit"){
+                    m_tokens.push_back(Token{TokenType::exit});
                     buf.clear();
                     continue;
                 }
                 else{
-                    std::cerr << "You Messed Up" << std::endl;
+                    std::cerr << "You messed up" << std::endl;
                     exit(EXIT_FAILURE);
                 }
             }
-            else if (std::isdigit(c)){
-                buf.push_back(c);
-                i++;
-                while (std::isdigit(str.at(i))){
-                    buf.push_back(str.at(i));
-                    i++;
+            else if(std::isdigit(peak().value())){
+                buf.push_back(consume());
+                while(peak().has_value() && std::isdigit(peak().value())){
+                    buf.push_back(consume());
                 }
-                i--;
-                tokens.push_back(Token{TokenType::int_lit, buf});
+                m_tokens.push_back(Token{TokenType::int_lit, buf});
                 buf.clear();
-            }
-            else if (c == ';'){
-                tokens.push_back(Token{TokenType::semi});
-            }
-            else if (std::isspace(c)){
                 continue;
             }
-            else{
-                std::cerr << "You Messed Up" << std::endl;
+            else if(peak().value() == ';'){
+                consume();
+                m_tokens.push_back(Token{TokenType::semi});
+                continue;
+            }
+            else if(std::isspace(peak().value())){
+                consume();
+                continue;
+            }
+            else {
+                std::cerr << "You messed up" << std::endl;
                 exit(EXIT_FAILURE);
             }
-
         }
-        return tokens;
+        m_index = 0;
+        return m_tokens;
     }
 
 private:
 
     [[nodiscard]] std::optional<char> peak(int ahead = 1) const {
-        if (m_index + ahead >= m_src.length()){
+        if (m_index + ahead > m_src.length()){
             return {};
         }
         else {
@@ -92,6 +86,6 @@ private:
     }
 
     const std::string m_src;
-    int m_index;
+    int m_index = 0;
 
 };
