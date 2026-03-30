@@ -18,7 +18,7 @@ struct Token {
 
 class Tokenizer {
 public:
-    inline Tokenizer(std::string& src)
+    inline Tokenizer(const std::string& src)
        : m_src(std::move(src))
     {
     }
