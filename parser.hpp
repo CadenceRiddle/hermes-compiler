@@ -6,6 +6,15 @@
 #include <iostream>
 #include "./tokenization.hpp"
 
+
+struct NodeExpr {
+    Token int_lit;
+};
+
+struct NodeExit {
+    NodeExpr expr;
+};
+
 class Parser {
 public:
     inline explicit Parser(std::vector<Token> tokens)
@@ -13,9 +22,13 @@ public:
     {
     }
 
+    NodeExit parse() {
+        
+    }
+
 private:
     [[nodiscard]] inline std::optional<Token> peak(int ahead = 1) const {
-        if (m_index + ahead > m_tokens.length()){
+        if (m_index + ahead > m_tokens.size()){
             return {};
         }
         else {
