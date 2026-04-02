@@ -35,6 +35,7 @@ public:
         std::optional<NodeExit> exit_node;
         while(peak().has_value()) {
             if (peak().value().type == TokenType::exit){
+                consume();
                 if(auto node_expr = parse_expr()){
                     exit_node = NodeExit{node_expr.value()};
                 }
