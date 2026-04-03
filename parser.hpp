@@ -4,15 +4,36 @@
 #include <string>
 #include <optional>
 #include <iostream>
+#include <variant>
 #include "./tokenization.hpp"
 
-
-struct NodeExpr {
+struct NodeExprIntLit {
     Token int_lit;
 };
 
-struct NodeExit {
+struct NodeExprIdent {
+    Token ident;
+};
+
+struct NodeExpr {
+    std::variant<NodeExprIntLit, NodeExprIdent> var;
+};
+
+struct NodeStmtExit{
     NodeExpr expr;
+};
+
+struct NodeStmtLet{
+    Token ident;
+    NodeExpr expr;
+};
+
+struct NodeStmt {
+    std::variant<NodeStmtExit, NodeStmtLet> var;
+};
+
+struct NodeProgram {
+    std::vector<NodeStmt> stmts;
 };
 
 class Parser {
@@ -34,13 +55,21 @@ public:
     std::optional<NodeExit> parse() {
         std::optional<NodeExit> exit_node;
         while(peak().has_value()) {
-            if (peak().value().type == TokenType::exit){
+            if (peak().value().type == TokenType::exit && peak(1).has_value() && peak(1).value().type == TokenType::open_paren){
+                consume();
                 consume();
                 if(auto node_expr = parse_expr()){
                     exit_node = NodeExit{node_expr.value()};
                 }
                 else{
                     std::cerr << "invalid expression" << std::endl;
+                    exit(EXIT_FAILURE);
+                }
+                if (peak().has_value() && peak().value().type == TokenType::close_paren){
+                    consume();
+                }
+                else{
+                    std::cerr << "expected ')'" << std::endl;
                     exit(EXIT_FAILURE);
                 }
                 if(peak().has_value() && peak().value().type == TokenType::semi){
@@ -57,12 +86,12 @@ public:
     }
 
 private:
-    [[nodiscard]] inline std::optional<Token> peak(int ahead = 1) const {
-        if (m_index + ahead > m_tokens.size()){
+    [[nodiscard]] inline std::optional<Token> peak(int offset = 0) const {
+        if (m_index + offset >= m_tokens.size()){
             return {};
         }
         else {
-            return m_tokens.at(m_index);
+            return m_tokens.at(m_index + offset);
         }
     }
 
