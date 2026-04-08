@@ -6,8 +6,8 @@
 
 class Generator {
 public:
-    inline Generator(NodeExit root)
-        : m_root(root)
+    inline Generator(NodeProgram prog)
+        : m_prog(prog)
     {
     }
 
@@ -15,12 +15,12 @@ public:
         std::stringstream output;
         output << "global _start\n_start:\n";
         output << "    mov rax, 60\n";
-        output << "    mov rdi, " << m_root.expr.int_lit.value.value() << "\n";
+        output << "    mov rdi, " << m_prog.expr.int_lit.value.value() << "\n";
         output << "    syscall\n";
 
         return output.str();
     }
 
 private:
-    const NodeExit m_root;
+    const NodeProgram m_prog;
 };
