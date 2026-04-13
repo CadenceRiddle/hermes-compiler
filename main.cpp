@@ -6,6 +6,7 @@
 #include "./tokenization.hpp"
 #include "./parser.hpp"
 #include "./generation.hpp"
+#include "./arena.hpp"
 
 
 int main(int argc, char* argv[]){
