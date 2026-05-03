@@ -13,7 +13,8 @@ enum class TokenType {
     close_paren,
     ident,
     let,
-    equal
+    equal, 
+    plus
 };
 
 struct Token {
@@ -76,6 +77,11 @@ public:
             else if(peak().value() == ';'){
                 consume();
                 m_tokens.push_back(Token{TokenType::semi});
+                continue;
+            }
+            else if(peak().value() == '+'){
+                consume();
+                m_tokens.push_back(Token{TokenType::plus});
                 continue;
             }
             else if(peak().value() == '='){
