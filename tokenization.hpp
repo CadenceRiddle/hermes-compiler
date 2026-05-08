@@ -14,13 +14,29 @@ enum class TokenType {
     ident,
     let,
     equal, 
-    plus
+    plus,
+    star, 
+    sub, 
+    div
 };
+
+std::optional<int> bin_prec(TokenType type){
+    switch(type){
+        case TokenType::plus:
+        case TokenType::sub:
+            return 0;
+        case TokenType::div:
+        case TokenType::star:
+            return 1;
+        default: 
+            return {};
+    }
+}
 
 struct Token {
     TokenType type;
     std::optional<std::string> value {}; 
-}; 
+};
 
 class Tokenizer {
 public:
@@ -82,6 +98,21 @@ public:
             else if(peak().value() == '+'){
                 consume();
                 m_tokens.push_back(Token{TokenType::plus});
+                continue;
+            }
+            else if(peak().value() == '*'){
+                consume();
+                m_tokens.push_back(Token{TokenType::star});
+                continue;
+            }
+            else if(peak().value() == '-'){
+                consume();
+                m_tokens.push_back(Token{TokenType::sub});
+                continue;
+            }
+            else if(peak().value() == '/'){
+                consume();
+                m_tokens.push_back(Token{TokenType::div});
                 continue;
             }
             else if(peak().value() == '='){
