@@ -17,7 +17,10 @@ enum class TokenType {
     plus,
     star, 
     sub, 
-    div
+    div, 
+    open_curly,
+    close_curly,
+    if_
 };
 
 std::optional<int> bin_prec(TokenType type){
@@ -58,17 +61,18 @@ public:
                 if (buf == "exit"){
                     m_tokens.push_back(Token{TokenType::exit});
                     buf.clear();
-                    continue;
                 }
                 else if(buf == "let"){
                     m_tokens.push_back(Token{TokenType::let});
                     buf.clear();
-                    continue;
+                }
+                else if(buf == "if"){
+                    m_tokens.push_back(Token{TokenType::if_});
+                    buf.clear();
                 }
                 else{
                     m_tokens.push_back({TokenType::ident, buf});
                     buf.clear();
-                    continue;
                 }
             }
             else if(std::isdigit(peak().value())){
@@ -78,51 +82,49 @@ public:
                 }
                 m_tokens.push_back(Token{TokenType::int_lit, buf});
                 buf.clear();
-                continue;
             }
             else if(peak().value() == '('){
                 consume();
                 m_tokens.push_back(Token{TokenType::open_paren});
-                continue;
             }
             else if(peak().value() == ')'){
                 consume();
                 m_tokens.push_back(Token{TokenType::close_paren});
-                continue;
+            }
+            else if(peak().value() == '{'){
+                consume();
+                m_tokens.push_back(Token{TokenType::open_curly});
+            }
+            else if(peak().value() == '}'){
+                consume();
+                m_tokens.push_back(Token{TokenType::close_curly});
             }
             else if(peak().value() == ';'){
                 consume();
                 m_tokens.push_back(Token{TokenType::semi});
-                continue;
             }
             else if(peak().value() == '+'){
                 consume();
                 m_tokens.push_back(Token{TokenType::plus});
-                continue;
             }
             else if(peak().value() == '*'){
                 consume();
                 m_tokens.push_back(Token{TokenType::star});
-                continue;
             }
             else if(peak().value() == '-'){
                 consume();
                 m_tokens.push_back(Token{TokenType::sub});
-                continue;
             }
             else if(peak().value() == '/'){
                 consume();
                 m_tokens.push_back(Token{TokenType::div});
-                continue;
             }
             else if(peak().value() == '='){
                 consume(); 
                 m_tokens.push_back(Token{TokenType::equal});
-                continue;
             }
             else if(std::isspace(peak().value())){
                 consume();
-                continue;
             }
             else {
                 std::cerr << "You messed up" << std::endl;

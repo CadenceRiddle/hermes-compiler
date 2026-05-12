@@ -2,8 +2,8 @@
 #include <string>
 #include <sstream>
 #include <iostream>
-#include <unordered_map>
 #include <cassert>
+#include <algorithm>
 #include "./parser.hpp"
 
 class Generator {
@@ -21,14 +21,17 @@ public:
                 gen->push("rax");
             }
             void operator()(const NodeTermIdent* term_ident) const{
-                if (gen->m_vars.find(term_ident->ident.value.value()) == gen->m_vars.end()){
-                    std::cerr << "Undeclared identifier: " << term_ident->ident.value.value() << std::endl;
-                    exit(EXIT_FAILURE);
-                }
+                auto it = std::find_if(
+                    gen->m_vars.cbegin(),
+                    gen->m_vars.cend(),
+                    [&](const Var& var) { return var.name == term_ident->ident.value.value();});
 
-                const auto& var = gen->m_vars.at(term_ident->ident.value.value());
+                if (it == gen->m_vars.cend()){
+                        std::cerr << "Undeclared identifier: " << term_ident->ident.value.value() << std::endl;
+                        exit(EXIT_FAILURE);
+                    }
                 std::stringstream offset;
-                offset << "QWORD [rsp + " << (gen->m_stack_size - var.stack_loc - 1) * 8 << "]\n";
+                offset << "QWORD [rsp + " << (gen->m_stack_size - (*it).stack_loc - 1) * 8 << "]\n";
                 gen->push(offset.str());
             }
             void operator()(const NodeTermParen* term_paren) const{
@@ -100,6 +103,14 @@ public:
         std::visit(visitor, expr->var);
     }
 
+    void gen_scope(const NodeStmtScope* scope){
+        begin_scope();
+        for (const NodeStmt* stmt : scope->stmts){
+            gen_stmt(stmt);
+        }
+        end_scope();
+    }
+
     void gen_stmt(const NodeStmt* stmt) {
         struct StmtVisitor {
             Generator* gen;
@@ -117,14 +128,34 @@ public:
             }
             
             void operator()(const NodeStmtLet* stmt_let){
-                if(gen->m_vars.find(stmt_let->ident.value.value()) != gen->m_vars.end()){
+
+                auto it = std::find_if(
+                    gen->m_vars.cbegin(),
+                    gen->m_vars.cend(),
+                    [&](const Var& var) { return var.name == stmt_let->ident.value.value();});
+
+                if(it != gen->m_vars.cend()){
                     std::cerr << "Identifier already used: " << stmt_let->ident.value.value();
                     exit(EXIT_FAILURE);
                 }
-
+            
                 
-                gen->m_vars.insert({stmt_let->ident.value.value(), Var {gen->m_stack_size}});
+                gen->m_vars.push_back({stmt_let->ident.value.value(), gen->m_stack_size});
                 gen->gen_expr(stmt_let->expr);
+            }
+
+            void operator()(const NodeStmtScope* scope){
+                gen->gen_scope(scope);
+            }
+
+            void operator()(const NodeStmtIf* stmt_if){
+                gen->gen_expr(stmt_if->expr);
+                gen->pop("rax");
+                std::string label = gen->create_label();
+                gen->m_output << "    test rax, rax\n";
+                gen->m_output << "    jz " << label << "\n";
+                gen->gen_scope(stmt_if->scope);
+                gen->m_output << label << ":\n";
             }
         };
 
@@ -158,12 +189,35 @@ private:
         m_stack_size--;
     }
 
+    void begin_scope(){
+        m_scopes.push_back(m_vars.size());
+    }
+
+    void end_scope(){
+        size_t pop_count = m_vars.size() - m_scopes.back();
+        m_output << "    add rsp, " << pop_count * 8 << "\n";
+        m_stack_size -= pop_count;
+        for (int i = 0; i < pop_count; i++) {
+            m_vars.pop_back();
+        }
+        m_scopes.pop_back();
+    }
+
+    std::string create_label() {
+        std::stringstream ss;
+        ss << "label" << m_label_count++;
+        return ss.str();
+    }
+
     struct Var {
+        std::string name;
         size_t stack_loc;
     };
 
     const NodeProgram m_prog;
     std::stringstream m_output;
     size_t m_stack_size = 0;
-    std::unordered_map<std::string, Var> m_vars {};
+    std::vector<Var> m_vars {};
+    std::vector<size_t> m_scopes {};
+    int m_label_count = 0;
 };
